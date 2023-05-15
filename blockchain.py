@@ -12,7 +12,7 @@ class Blockchain(object):
         self.current_transactions = []
 
         # Create genesis block 
-        self.new_block(previous_hash=1, proof=100)
+        self.new_block(previous_hash='0', proof=1)
 
     
     def new_block(self, proof, previous_hash=None):
@@ -43,12 +43,20 @@ class Blockchain(object):
 
 
     # Proof of work 
-    def proof_of_work(self, last_proof): 
-        proof = 0 
-        while self.valid_proof(last_proof, proof) is False: 
-            proof += 1 
+    def proof_of_work(self, last_proof):
+        new_proof = 1
+        check_proof = False
 
-        return proof 
+        while check_proof is False:
+            hash_operation = hashlib.sha256(
+                str(new_proof**2 - last_proof**2).encode()).hexdigest()
+            if hash_operation[:5] == '00000':
+                check_proof = True
+            else:
+                new_proof += 1
+ 
+        return new_proof
+ 
     
 
     @staticmethod 
@@ -79,7 +87,7 @@ node_identifier = str(uuid4()).replace('-', '')
 # Instantiate the Blockchain
 blockchain = Blockchain()
 
-
+# Flask Setup  
 @app.route('/mine', methods=['GET'])
 def mine():
     # We run the proof of work algorithm 
@@ -105,9 +113,10 @@ def mine():
     }
     return jsonify(response), 200
 
-@app.route('/transactions/new', methods=['POST'])
-def new_transaction():
-    return "We'll add a new transaction"
+
+#@app.route('/transactions/new', methods=['POST'])
+#def new_transaction():
+ #   return "We'll add a new transaction"
 
 
 @app.route('/chain', methods=['GET'])
